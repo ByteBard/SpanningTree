@@ -107,9 +107,9 @@ class Switch(StpSwitch):
         hasSmallerRoot = self.root > message.root
         hasSmallerDistance = self.distance > (message.distance + 1)
         hasDiffPath = hasSameRootAndDistance & (message.origin != self.switchThrough) & message.pathThrough
-        pathTrueButNoOriginInALinks = hasSameRootAndDistance & message.pathThrough & (
+        pathTrueButNoOriginInALinks = message.pathThrough & (
                 message.origin not in self.active_links)
-        pathFalseButHasOriginInALinks = hasSameRootAndDistance & (not message.pathThrough) & (
+        pathFalseButHasOriginInALinks = (not message.pathThrough) & (
                 message.origin in self.active_links)
         originLessThanSwitchThrough = hasSameRootAndDistance & (
                 message.origin < self.switchThrough)
@@ -150,7 +150,7 @@ class Switch(StpSwitch):
                 self.active_links.add(message.origin)
             elif pathTrueButNoOriginInALinks:
                 self.active_links.add(message.origin)
-            elif pathFalseButHasOriginInALinks:
+            elif pathFalseButHasOriginInALinks & (message.origin != self.switchThrough):
                 self.active_links.remove(message.origin)
 
         print('     After: ')
@@ -203,8 +203,12 @@ class Switch(StpSwitch):
         #      2 - 1, 2 - 3
         #      A full example of a valid output file is included (sample_output.txt) with the project skeleton.
         res = ''
-        orderedLinks = self.active_links
-        sorted(orderedLinks)
-        for link in orderedLinks:
-            res += (str(self.switchID) + ' - ' + str(link) + ', ')
+        ls = list(self.active_links)
+        ls.sort()
+        for idx, x in enumerate(ls):
+            if idx == len(ls) - 1:
+                res += (str(self.switchID) + ' - ' + str(x))
+            else:
+                res += (str(self.switchID) + ' - ' + str(x) + ', ')
+
         return res
